@@ -3,6 +3,7 @@ from django.db import models
 class Book(models.Model):
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to="books/")
+    vector_collection_name = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.title

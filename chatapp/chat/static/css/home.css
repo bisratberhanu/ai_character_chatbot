@@ -1,0 +1,98 @@
+/* static/css/home.css */
+
+/* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2c2c2c 100%);
+  color: #e0e0e0;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Container */
+.container {
+  text-align: center;
+  background-color: #2c2c2c;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  max-width: 500px;
+  width: 90%;
+  margin: 20px;
+}
+
+/* Title */
+.title {
+  color: #00bcd4;
+  font-size: 2.5em;
+  text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+  animation: glow 2s infinite alternate;
+  margin-bottom: 10px;
+}
+
+/* Subtitle */
+.subtitle {
+  font-size: 1.2em;
+  color: #b0b0b0;
+  margin-bottom: 30px;
+}
+
+/* Options Container */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Button Styles */
+.btn {
+  display: inline-block;
+  padding: 15px 25px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 1.1em;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid transparent; /* Default border */
+}
+
+/* Option Buttons */
+.option-btn {
+  background: #333;
+  color: #e0e0e0;
+}
+
+.option-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 188, 212, 0.5);
+}
+
+/* Specific Button Styles */
+.upload-btn {
+  border-color: #00bcd4; /* Cyan border */
+}
+
+.upload-btn:hover {
+  background: #00bcd4;
+  color: #1e1e1e;
+}
+
+.existing-btn {
+  border-color: #ff69b4; /* Pink border for contrast */
+}
+
+.existing-btn:hover {
+  background: #ff69b4;
+  color: #1e1e1e;
+}
+
+/* Animation */
+@keyframes glow {
+  from { text-shadow: 0 0 5px rgba(0, 188, 212, 0.5); }
+  to { text-shadow: 0 0 15px rgba(0, 188, 212, 0.8); }
+}

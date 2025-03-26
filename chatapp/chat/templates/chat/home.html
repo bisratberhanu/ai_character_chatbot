@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Chat App</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}" />
 </head>
 <body>
-    <h1>Welcome to the Chat App</h1>
-    <p>Choose an option:</p>
-    <a href="{% url 'upload_and_chat' %}">Upload a book and chat with characters</a><br>
-    <a href="{% url 'from_other_users_characters' %}">Chat with existing characters</a>
+    <div class="container">
+        <h1 class="title">Welcome to the Chat App</h1>
+        <p class="subtitle">Choose an option to begin your journey:</p>
+        <div class="options">
+            <a href="{% url 'upload_and_chat' %}" class="btn option-btn upload-btn">Upload a Book and Chat</a>
+            <a href="{% url 'from_other_users_characters' %}" class="btn option-btn existing-btn">Chat with Existing Characters</a>
+        </div>
+    </div>
+    <script src="{% static 'js/home.js' %}"></script>
 </body>
 </html>
