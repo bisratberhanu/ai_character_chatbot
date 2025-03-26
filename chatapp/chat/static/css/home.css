@@ -13,6 +13,42 @@ body {
   align-items: center;
 }
 
+/* User Indicator */
+.user-indicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-letter {
+  background: #00bcd4;
+  color: #1e1e1e;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5em;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 2px solid #0097a7;
+}
+
+.logout-link {
+  color: #ff4444;
+  text-decoration: none;
+  font-size: 1em;
+  transition: color 0.3s;
+}
+
+.logout-link:hover {
+  color: #ff6666;
+}
+
 /* Container */
 .container {
   text-align: center;
@@ -58,7 +94,7 @@ body {
   font-weight: bold;
   transition: all 0.3s ease;
   cursor: pointer;
-  border: 2px solid transparent; /* Default border */
+  border: 2px solid transparent;
 }
 
 /* Option Buttons */
@@ -74,7 +110,7 @@ body {
 
 /* Specific Button Styles */
 .upload-btn {
-  border-color: #00bcd4; /* Cyan border */
+  border-color: #00bcd4;
 }
 
 .upload-btn:hover {
@@ -83,7 +119,7 @@ body {
 }
 
 .existing-btn {
-  border-color: #ff69b4; /* Pink border for contrast */
+  border-color: #ff69b4;
 }
 
 .existing-btn:hover {

@@ -1,0 +1,104 @@
+/* static/css/auth.css */
+
+/* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2c2c2c 100%);
+  color: #e0e0e0;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  text-align: center;
+  background-color: #2c2c2c;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  max-width: 400px;
+  width: 90%;
+  margin: 20px;
+}
+
+/* Title */
+.title {
+  color: #00bcd4;
+  font-size: 2.5em;
+  text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+  animation: glow 2s infinite alternate;
+  margin-bottom: 20px;
+}
+
+/* Toggle Buttons */
+.auth-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.toggle-btn {
+  background: #333;
+  color: #e0e0e0;
+  border: 2px solid #444;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn.active, .toggle-btn:hover {
+  background: #00bcd4;
+  border-color: #00bcd4;
+  color: #1e1e1e;
+}
+
+/* Auth Sections */
+.auth-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.hidden {
+  display: none;
+}
+
+.auth-section input {
+  padding: 10px;
+  border: 2px solid #444;
+  border-radius: 5px;
+  background: #1e1e1e;
+  color: #e0e0e0;
+  transition: border-color 0.3s;
+}
+
+.auth-section input:focus {
+  border-color: #00bcd4;
+  outline: none;
+}
+
+.btn {
+  background-color: #00bcd4;
+  color: #fff;
+  border: 2px solid #00bcd4;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+  background-color: #0097a7;
+  transform: scale(1.05);
+}
+
+/* Animation */
+@keyframes glow {
+  from { text-shadow: 0 0 5px rgba(0, 188, 212, 0.5); }
+  to { text-shadow: 0 0 15px rgba(0, 188, 212, 0.8); }
+}

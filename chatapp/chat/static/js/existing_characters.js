@@ -15,18 +15,25 @@ document.addEventListener("DOMContentLoaded", function () {
   const blissSpan = document.getElementById("bliss");
 
   let selectedCharacterId = null;
-  let userName = localStorage.getItem("user_name");
 
-  if (!userName) {
-    userName = prompt("Please enter your name to start chatting:");
-    if (!userName) {
-      alert("A name is required to proceed.");
-      return;
-    }
-    localStorage.setItem("user_name", userName);
-  }
+  fetch("/api/clear_session/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+    body: JSON.stringify({}),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (!data.success) {
+        console.error("Failed to clear session:", data.error);
+      }
+    })
+    .catch((error) => {
+      console.error("Error clearing session:", error);
+    });
 
-  // Fetch existing characters
   fetch("/api/characters/")
     .then((response) => response.json())
     .then((data) => {
@@ -80,14 +87,13 @@ document.addEventListener("DOMContentLoaded", function () {
       body: JSON.stringify({
         character_id: selectedCharacterId,
         message: message,
-        user_id: userName,
       }),
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          appendMessage(userName, message);
-          appendMessage(characterNameSpan.textContent, data.response);
+          appendMessage("You", message, true);
+          appendMessage(characterNameSpan.textContent, data.response, false);
           updateEmotions(data.emotions);
         } else {
           alert("Chat error: " + data.error);
@@ -99,10 +105,21 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  function appendMessage(sender, text) {
-    const p = document.createElement("p");
-    p.textContent = `${sender}: ${text}`;
-    chatMessages.appendChild(p);
+  function appendMessage(sender, text, isUser) {
+    const messageDiv = document.createElement("div");
+    messageDiv.className = `message ${isUser ? "user" : ""}`;
+
+    const senderSpan = document.createElement("span");
+    senderSpan.className = "sender";
+    senderSpan.textContent = `${sender}:`;
+
+    const textSpan = document.createElement("span");
+    textSpan.className = "text";
+    textSpan.textContent = text;
+
+    messageDiv.appendChild(senderSpan);
+    messageDiv.appendChild(textSpan);
+    chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
@@ -129,7 +146,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return cookieValue;
   }
 
-  // Add button click animation
   const sendButton = chatForm.querySelector(".btn");
   sendButton.addEventListener("click", function (e) {
     sendButton.style.transform = "scale(0.95)";

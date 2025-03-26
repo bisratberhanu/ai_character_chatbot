@@ -8,12 +8,50 @@ body {
   margin: 0;
   padding: 20px;
   min-height: 100vh;
+  position: relative;
 }
 
 .hidden {
   display: none;
 }
 
+/* User Indicator */
+.user-indicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-letter {
+  background: #00bcd4;
+  color: #1e1e1e;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5em;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 2px solid #0097a7;
+}
+
+.logout-link {
+  color: #ff4444;
+  text-decoration: none;
+  font-size: 1em;
+  transition: color 0.3s;
+}
+
+.logout-link:hover {
+  color: #ff6666;
+}
+
+/* Container */
 .container {
   max-width: 800px;
   margin: 0 auto;
@@ -94,17 +132,29 @@ body {
   margin-bottom: 15px;
 }
 
-.chat-box p {
+.chat-box .message {
+  display: flex;
+  align-items: flex-start;
   margin: 8px 0;
   padding: 10px;
   border-radius: 8px;
   background: #333;
-  word-wrap: break-word;
 }
 
-.chat-box p:nth-child(even) {
+.chat-box .message.user {
   background: #444;
   margin-left: 20px;
+}
+
+.chat-box .sender {
+  font-weight: bold;
+  color: #00bcd4;
+  min-width: 120px;
+}
+
+.chat-box .text {
+  flex: 1;
+  word-wrap: break-word;
 }
 
 /* Emotion Levels */

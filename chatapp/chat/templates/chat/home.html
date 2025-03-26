@@ -1,3 +1,4 @@
+<!-- chat/templates/chat/home.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +9,12 @@
     <link rel="stylesheet" href="{% static 'css/home.css' %}" />
 </head>
 <body>
+    <div class="user-indicator">
+        {% if user.is_authenticated %}
+            <span class="user-letter">{{ user.username|slice:":1" }}</span>
+            <a href="{% url 'logout' %}" class="logout-link">Logout</a>
+        {% endif %}
+    </div>
     <div class="container">
         <h1 class="title">Welcome to the Chat App</h1>
         <p class="subtitle">Choose an option to begin your journey:</p>

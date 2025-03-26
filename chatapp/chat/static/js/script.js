@@ -1,4 +1,4 @@
-// script.js
+// static/js/script.js
 
 document.addEventListener("DOMContentLoaded", function () {
   const uploadForm = document.getElementById("upload-form");
@@ -17,16 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const blissSpan = document.getElementById("bliss");
 
   let selectedCharacterId = null;
-  let userName = localStorage.getItem("user_name");
-
-  if (!userName) {
-    userName = prompt("Please enter your name to start chatting:");
-    if (!userName) {
-      alert("A name is required to proceed.");
-      return;
-    }
-    localStorage.setItem("user_name", userName);
-  }
 
   uploadForm.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -96,13 +86,12 @@ document.addEventListener("DOMContentLoaded", function () {
       body: JSON.stringify({
         character_id: selectedCharacterId,
         message: message,
-        user_id: userName,
       }),
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          appendMessage(userName, message);
+          appendMessage("You", message);
           appendMessage(characterNameSpan.textContent, data.response);
           updateEmotions(data.emotions);
         } else {

@@ -1,21 +1,80 @@
-from django.shortcuts import render, get_object_or_404
+# chat/views.py
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib import messages
 from .models import Book, Character, Conversation
 from .utils import extract_characters, store_book_in_vector_db, get_relevant_context
 import google.generativeai as genai
 import json
-from PyPDF2 import PdfReader
-
 genai.configure(api_key="AIzaSyAwuj2Rh3GjdjZAzrsWMdDrzcTZmFzGyuw")  # Replace with your actual API key
 
+
+def auth_view(request):
+    """Render the signup/login page."""
+    if request.user.is_authenticated:
+        return redirect('home')
+    return render(request, 'chat/auth.html')
+
+
+@csrf_exempt
+def signup_view(request):
+    """Handle user signup."""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            username = data.get("username")
+            password = data.get("password")
+            if not username or not password:
+                return JsonResponse({"success": False, "error": "Username and password are required."})
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({"success": False, "error": "Username already exists."})
+            user = User.objects.create_user(username=username, password=password)
+            login(request, user)
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method."})
+
+@csrf_exempt
+def login_view(request):
+    """Handle user login."""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            username = data.get("username")
+            password = data.get("password")
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "error": "Invalid username or password."})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method."})
+
+def logout_view(request):
+    """Handle user logout."""
+    logout(request)
+    return redirect('auth')
+
+
+@login_required
 def home_view(request):
     return render(request, 'chat/home.html')
 
+
+@login_required
 def upload_and_chat_view(request):
     """Render the upload and chat page."""
     return render(request, "chat/upload_and_chat.html")
 
+
+@login_required
 def from_other_users_characters_view(request):
     """Render the page to chat with existing characters."""
     return render(request, "chat/from_other_users_characters.html")
@@ -86,7 +145,7 @@ def upload_book_api(request):
 
 
 
-
+@login_required
 def list_characters_api(request):
     """Return a list of all characters in the database."""
     if request.method == "GET":
@@ -96,6 +155,7 @@ def list_characters_api(request):
 
 
 @csrf_exempt
+@login_required
 def chat_with_character_api(request):
     """Handle chat interactions with a selected character."""
     if request.method == "POST":
@@ -181,4 +241,19 @@ def chat_with_character_api(request):
             "response": response_text.strip(),
             "emotions": emotion_levels
         })
+    return JsonResponse({"success": False, "error": "Invalid request method."})
+
+
+
+@csrf_exempt
+def clear_session_api(request):
+    if request.method == "POST":
+        try:
+            keys_to_clear = [key for key in request.session.keys() if key.startswith('conversation_history_')]
+            for key in keys_to_clear:
+                del request.session[key]
+            request.session.modified = True
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
     return JsonResponse({"success": False, "error": "Invalid request method."})

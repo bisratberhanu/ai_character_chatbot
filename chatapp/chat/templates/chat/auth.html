@@ -1,0 +1,35 @@
+<!-- chat/templates/chat/auth.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up or Log In</title>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}" />
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Welcome to the Chat App</h1>
+        <div class="auth-toggle">
+            <button id="signup-btn" class="toggle-btn active">Sign Up</button>
+            <button id="login-btn" class="toggle-btn">Log In</button>
+        </div>
+        <div id="signup-section" class="auth-section">
+            <form id="signup-form">
+                <input type="text" id="signup-username" placeholder="Username" required />
+                <input type="password" id="signup-password" placeholder="Password" required />
+                <button type="submit" class="btn">Sign Up</button>
+            </form>
+        </div>
+        <div id="login-section" class="auth-section hidden">
+            <form id="login-form">
+                <input type="text" id="login-username" placeholder="Username" required />
+                <input type="password" id="login-password" placeholder="Password" required />
+                <button type="submit" class="btn">Log In</button>
+            </form>
+        </div>
+    </div>
+    <script src="{% static 'js/auth.js' %}"></script>
+</body>
+</html>

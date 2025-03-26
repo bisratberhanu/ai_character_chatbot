@@ -1,52 +1,59 @@
+<!-- chat/templates/chat/upload_and_chat.html -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     {% load static %}
-
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Upload and Chat</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-  </head>
-  <body>
-    <h1 class="title">Upload a Book and Chat with Characters</h1>
-
-    <div id="upload-section" class="card">
-      <form id="upload-form" enctype="multipart/form-data">
-        <input type="file" id="book-file" name="book" accept=".txt, .pdf" required />
-        <button type="submit" class="btn">Upload Book</button>
-      </form>
+</head>
+<body>
+    <div class="user-indicator">
+        {% if user.is_authenticated %}
+            <span class="user-letter">{{ user.username|slice:":1" }}</span>
+            <a href="{% url 'logout' %}" class="logout-link">Logout</a>
+        {% endif %}
     </div>
+    <div class="container">
+        <h1 class="title">Upload a Book and Chat with Characters</h1>
 
-    <div id="characters-section" class="hidden card">
-      <h2>Select a Character</h2>
-      <ul id="characters-list"></ul>
-    </div>
-
-    <div id="chat-section" class="hidden card">
-      <h2>Chat with <span id="character-name"></span></h2>
-      <div id="chat-messages" class="chat-box"></div>
-      <div id="emotion-levels" class="emotion-container">
-        <h3>Emotion Levels</h3>
-        <div id="emotions">
-          <span class="emotion" data-type="anger">Anger: <span id="anger">1</span></span>
-          <span class="emotion" data-type="sadness">Sadness: <span id="sadness">1</span></span>
-          <span class="emotion" data-type="pride">Pride: <span id="pride">1</span></span>
-          <span class="emotion" data-type="joy">Joy: <span id="joy">1</span></span>
-          <span class="emotion" data-type="bliss">Bliss: <span id="bliss">1</span></span>
+        <div id="upload-section" class="card">
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" id="book-file" name="book" accept=".txt, .pdf" required />
+                <button type="submit" class="btn">Upload Book</button>
+            </form>
         </div>
-      </div>
-      <form id="chat-form" class="chat-input">
-        <input
-          type="text"
-          id="message-input"
-          placeholder="Type your message..."
-          required
-        />
-        <button type="submit" class="btn">Send</button>
-      </form>
-    </div>
 
+        <div id="characters-section" class="hidden card">
+            <h2>Select a Character</h2>
+            <ul id="characters-list"></ul>
+        </div>
+
+        <div id="chat-section" class="hidden card">
+            <h2>Chat with <span id="character-name"></span></h2>
+            <div id="chat-messages" class="chat-box"></div>
+            <div id="emotion-levels" class="emotion-container">
+                <h3>Emotion Levels</h3>
+                <div id="emotions">
+                    <span class="emotion" data-type="anger">Anger: <span id="anger">1</span></span>
+                    <span class="emotion" data-type="sadness">Sadness: <span id="sadness">1</span></span>
+                    <span class="emotion" data-type="pride">Pride: <span id="pride">1</span></span>
+                    <span class="emotion" data-type="joy">Joy: <span id="joy">1</span></span>
+                    <span class="emotion" data-type="bliss">Bliss: <span id="bliss">1</span></span>
+                </div>
+            </div>
+            <form id="chat-form" class="chat-input">
+                <input
+                    type="text"
+                    id="message-input"
+                    placeholder="Type your message..."
+                    required
+                />
+                <button type="submit" class="btn">Send</button>
+            </form>
+        </div>
+    </div>
     <script src="{% static 'js/script.js' %}"></script>
-  </body>
+</body>
 </html>
