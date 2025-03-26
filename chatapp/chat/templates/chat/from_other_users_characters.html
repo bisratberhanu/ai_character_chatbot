@@ -10,6 +10,8 @@
         h1, h2 { text-align: center; }
         #chat-messages { max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
         #chat-form { margin-top: 10px; }
+        #emotion-levels { margin-top: 20px; }
+        .emotion { margin-right: 20px; }
     </style>
 </head>
 <body>
@@ -23,6 +25,16 @@
     <div id="chat-section" class="hidden">
         <h2>Chat with <span id="character-name"></span></h2>
         <div id="chat-messages"></div>
+        <div id="emotion-levels">
+            <h3>Emotion Levels</h3>
+            <div id="emotions">
+                <span class="emotion">Anger: <span id="anger">1</span></span>
+                <span class="emotion">Sadness: <span id="sadness">1</span></span>
+                <span class="emotion">Pride: <span id="pride">1</span></span>
+                <span class="emotion">Joy: <span id="joy">1</span></span>
+                <span class="emotion">Bliss: <span id="bliss">1</span></span>
+            </div>
+        </div>
         <form id="chat-form">
             <input type="text" id="message-input" placeholder="Type your message..." required>
             <button type="submit">Send</button>
@@ -38,6 +50,11 @@
             const chatMessages = document.getElementById("chat-messages");
             const chatForm = document.getElementById("chat-form");
             const messageInput = document.getElementById("message-input");
+            const angerSpan = document.getElementById("anger");
+            const sadnessSpan = document.getElementById("sadness");
+            const prideSpan = document.getElementById("pride");
+            const joySpan = document.getElementById("joy");
+            const blissSpan = document.getElementById("bliss");
 
             let selectedCharacterId = null;
             let userName = localStorage.getItem("user_name");
@@ -78,6 +95,12 @@
                 selectedCharacterId = id;
                 characterNameSpan.textContent = name;
                 chatMessages.innerHTML = "";
+                // Reset emotion levels to default for the first interaction
+                angerSpan.textContent = 1;
+                sadnessSpan.textContent = 1;
+                prideSpan.textContent = 1;
+                joySpan.textContent = 1;
+                blissSpan.textContent = 1;
                 chatSection.classList.remove("hidden");
                 charactersSection.classList.add("hidden");
             }
@@ -108,6 +131,7 @@
                     if (data.success) {
                         appendMessage(userName, message);
                         appendMessage(characterNameSpan.textContent, data.response);
+                        updateEmotions(data.emotions);
                     } else {
                         alert("Chat error: " + data.error);
                     }
@@ -123,6 +147,14 @@
                 p.textContent = `${sender}: ${text}`;
                 chatMessages.appendChild(p);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function updateEmotions(emotions) {
+                angerSpan.textContent = emotions.Anger;
+                sadnessSpan.textContent = emotions.Sadness;
+                prideSpan.textContent = emotions.Pride;
+                joySpan.textContent = emotions.Joy;
+                blissSpan.textContent = emotions.Bliss;
             }
 
             function getCookie(name) {

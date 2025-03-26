@@ -78,27 +78,65 @@ def chat_with_character_api(request):
 
         character = get_object_or_404(Character, id=character_id)
 
-        prompt = (
-            f"You are {character.name} from {character.book.title}. "
-            f"Based on the provided context:\n{character.context}\n"
-            f"Respond to: {user_message}"
-        )
+        # Get or initialize conversation history for this character from the session
+        history_key = f'conversation_history_{character_id}'
+        conversation_history = request.session.get(history_key, [])
 
+        # Append the user's message to the history
+        conversation_history.append({'role': 'user', 'content': user_message})
+
+        # Build the history string for the prompt
+        history_str = ""
+        for entry in conversation_history:
+            if entry['role'] == 'user':
+                history_str += f"User: {entry['content']}\n"
+            elif entry['role'] == 'model':
+                history_str += f"Character: {entry['content']}\n"
+
+        # Construct the prompt with character context, conversation history, and emotion instruction
+        prompt = (
+            f"You are {character.name} from {character.book.title}.\n"
+            f"Based on the provided context:\n{character.context}\n\n"
+            f"Here is the conversation so far:\n{history_str}\n"
+            f"Now, respond to the latest user message: {user_message}\n\n"
+            f"After your response, provide the emotion levels for the following five emotions on a scale of 1 to 5: "
+            f"Anger, Sadness, Pride, Joy, Bliss. Format the emotion levels as a JSON object, e.g., "
+            f"{{\"Anger\": 3, \"Sadness\": 2, \"Pride\": 4, \"Joy\": 5, \"Bliss\": 1}}."
+        )
         try:
             model = genai.GenerativeModel('gemini-1.5-flash')
-
             response = model.generate_content(prompt)
-            response_text = response.text if hasattr(response, "text") else "No response generated."
+            full_response = response.text if hasattr(response, "text") else "No response generated."
+
+            # Split the response into text and emotion levels, handling ```json marker
+            if "```json" in full_response:
+                response_text, json_part = full_response.split("```json", 1)
+                emotion_json = json_part.split("```")[0].strip()
+                emotion_levels = json.loads(emotion_json)
+            else:
+                response_text = full_response
+                # Default emotion levels if AI fails to provide them
+                emotion_levels = {"Anger": 1, "Sadness": 1, "Pride": 1, "Joy": 1, "Bliss": 1}
         except Exception as e:
             return JsonResponse({"success": False, "error": f"AI error: {str(e)}"})
 
-        # Save the conversation
+        # Append the model's response to the history
+        conversation_history.append({'role': 'model', 'content': response_text.strip()})
+
+        # Save the updated history back to the session
+        request.session[history_key] = conversation_history
+
+        # Save the conversation to the database
         conversation = Conversation.objects.create(
             character=character,
             user_id=user_id,
             message=user_message,
-            response=response_text
+            response=response_text.strip()
         )
 
-        return JsonResponse({"success": True, "response": response_text})
+        return JsonResponse({
+            "success": True,
+            "response": response_text.strip(),
+            "emotions": emotion_levels
+        })
     return JsonResponse({"success": False, "error": "Invalid request method."})
