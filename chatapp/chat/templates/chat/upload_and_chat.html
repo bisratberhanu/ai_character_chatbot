@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload and Chat</title>
+    <style>
+        .hidden { display: none; }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { text-align: center; }
+        #chat-messages { max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+        #chat-form { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Upload a Book and Chat with Characters</h1>
+
+    <div id="upload-section">
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" id="book-file" name="book" accept=".txt" required>
+            <button type="submit">Upload Book</button>
+        </form>
+    </div>
+
+    <div id="characters-section" class="hidden">
+        <h2>Select a Character</h2>
+        <ul id="characters-list" style="list-style: none; padding: 0;"></ul>
+    </div>
+
+    <div id="chat-section" class="hidden">
+        <h2>Chat with <span id="character-name"></span></h2>
+        <div id="chat-messages"></div>
+        <form id="chat-form">
+            <input type="text" id="message-input" placeholder="Type your message..." required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const uploadForm = document.getElementById("upload-form");
+            const charactersSection = document.getElementById("characters-section");
+            const charactersList = document.getElementById("characters-list");
+            const chatSection = document.getElementById("chat-section");
+            const characterNameSpan = document.getElementById("character-name");
+            const chatMessages = document.getElementById("chat-messages");
+            const chatForm = document.getElementById("chat-form");
+            const messageInput = document.getElementById("message-input");
+            const uploadSection = document.getElementById("upload-section");
+
+            let selectedCharacterId = null;
+            let userName = localStorage.getItem("user_name");
+
+            if (!userName) {
+                userName = prompt("Please enter your name to start chatting:");
+                if (!userName) {
+                    alert("A name is required to proceed.");
+                    return;
+                }
+                localStorage.setItem("user_name", userName);
+            }
+
+            uploadForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const formData = new FormData(uploadForm);
+                fetch("/api/upload_book/", {
+                    method: "POST",
+                    body: formData,
+                    headers: { "X-CSRFToken": getCookie("csrftoken") }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        charactersList.innerHTML = "";
+                        data.characters.forEach(char => {
+                            const li = document.createElement("li");
+                            li.textContent = char.name;
+                            li.style.cursor = "pointer";
+                            li.style.padding = "5px";
+                            li.addEventListener("click", () => selectCharacter(char.id, char.name));
+                            charactersList.appendChild(li);
+                        });
+                        charactersSection.classList.remove("hidden");
+                        uploadSection.classList.add("hidden");
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error("Upload error:", error);
+                    alert("An error occurred while uploading the book.");
+                });
+            });
+
+            function selectCharacter(id, name) {
+                selectedCharacterId = id;
+                characterNameSpan.textContent = name;
+                chatMessages.innerHTML = "";
+                chatSection.classList.remove("hidden");
+                charactersSection.classList.add("hidden");
+            }
+
+            chatForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const message = messageInput.value.trim();
+                if (!message) return;
+                sendMessage(message);
+                messageInput.value = "";
+            });
+
+            function sendMessage(message) {
+                fetch("/api/chat/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: JSON.stringify({
+                        character_id: selectedCharacterId,
+                        message: message,
+                        user_id: userName
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        appendMessage(userName, message);
+                        appendMessage(characterNameSpan.textContent, data.response);
+                    } else {
+                        alert("Chat error: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error("Chat error:", error);
+                    alert("An error occurred while chatting.");
+                });
+            }
+
+            function appendMessage(sender, text) {
+                const p = document.createElement("p");
+                p.textContent = `${sender}: ${text}`;
+                chatMessages.appendChild(p);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== "") {
+                    const cookies = document.cookie.split(";");
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+</body>
+</html>
