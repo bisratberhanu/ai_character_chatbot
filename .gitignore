@@ -7,3 +7,5 @@ __pycache__
 *.pyz
 *.pyzw
 *.ipynb_checkpoints
+
+.env
