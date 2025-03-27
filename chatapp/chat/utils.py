@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 import os 
 
 load_dotenv()
-# Configure the API key (do this once, typically outside the function)
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))  # Your API key
 
 
@@ -66,16 +65,13 @@ def extract_characters(book_text):
 
 def store_book_in_vector_db(book_id, book_text):
     """Store book text in Chroma vector database as 500-line chunks."""
-    # Split text into lines
     lines = book_text.splitlines()
     chunk_size = 500
     chunks = [lines[i:i + chunk_size] for i in range(0, len(lines), chunk_size)]
     
-    # Create a unique collection name for this book
     collection_name = f"book_{book_id}_vectors"
     collection = chroma_client.get_or_create_collection(name=collection_name)
     
-    # Generate embeddings for each chunk
     chunk_texts = ["\n".join(chunk) for chunk in chunks]
     embeddings = embedder.encode(chunk_texts, convert_to_tensor=False).tolist()
     

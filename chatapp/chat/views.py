@@ -12,6 +12,8 @@ import google.generativeai as genai
 import json
 from dotenv import load_dotenv
 import os
+from langchain.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
 load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))  # Replace with your actual API key
 
@@ -156,7 +158,6 @@ def list_characters_api(request):
         return JsonResponse({"success": True, "characters": list(characters)})
     return JsonResponse({"success": False, "error": "Invalid request method."})
 
-
 @csrf_exempt
 @login_required
 def chat_with_character_api(request):
@@ -175,41 +176,76 @@ def chat_with_character_api(request):
 
         character = get_object_or_404(Character, id=character_id)
 
+        # Verify API key is loaded
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            return JsonResponse({"success": False, "error": "Google API key not configured."})
+        # print("API Key Loaded:", bool(api_key))  # Debugging: Confirm API key presence
+
+        # Load conversation history from session
         history_key = f'conversation_history_{character_id}'
         conversation_history = request.session.get(history_key, [])
         conversation_history.append({'role': 'user', 'content': user_message})
 
+        # Format history as a string for the prompt
         history_str = ""
         for entry in conversation_history:
             if entry['role'] == 'user':
                 history_str += f"User: {entry['content']}\n"
             elif entry['role'] == 'model':
                 history_str += f"Character: {entry['content']}\n"
+        # print("Conversation History:", history_str)  # Debugging: Inspect history
 
         # Get relevant context from vector DB
         context = get_relevant_context(character.book.id, user_message)
-        print(context)
+        print("Context Retrieved:", context)  # Debugging: Check context
 
-        prompt = (
-            f"You are {character.name} from {character.book.title}.\n"
-            f"Based on the provided context:\n{context}\n\n"
-            f"Here is the conversation so far:\n{history_str}\n"
-            f"Now, respond to the latest user message: {user_message}\n\n"
-            f"After your response, on a new line, provide the emotion levels for the following five emotions on a scale of 1 to 5 "
-            f"(where 1 is the lowest and 5 is the highest, no values below 1 or above 5). "
-            f"Format the emotion levels as a JSON object enclosed in ```json and ``` markers, e.g.,\n"
-            f"```\nYour response here.\n```\n```json\n{{\"Anger\": 3, \"Sadness\": 2, \"Pride\": 4, \"Joy\": 5, \"Bliss\": 1}}\n```"
-        )
+        # Define the prompt template using LangChain
+        prompt_template = ChatPromptTemplate.from_messages([
+            ("system", (
+                "You are {character_name} from {book_title}.\n"
+                "Based on the provided context:\n{context}\n\n"
+                "Here is the conversation so far:\n{history}\n"
+                "Now, respond to the latest user message: {user_message}\n\n"
+                "After your response, on a new line, provide the emotion levels for the following five emotions on a scale of 1 to 5 "
+                "(where 1 is the lowest and 5 is the highest, no values below 1 or above 5). "
+                "Format the emotion levels as a JSON object enclosed in ```json and ``` markers, e.g.,\n"
+                "```\nYour response here.\n```\n```json\n{{\"Anger\": 3, \"Sadness\": 2, \"Pride\": 4, \"Joy\": 5, \"Bliss\": 1}}\n```"
+            )),
+            ("human", "{user_message}")
+        ])
+
+        # Format the prompt with the actual values
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(prompt)
-            full_response = response.text if hasattr(response, "text") else "No response generated."
+            formatted_prompt = prompt_template.format_messages(
+                character_name=character.name,
+                book_title=character.book.title,
+                context=context,
+                history=history_str,
+                user_message=user_message
+            )
+            # print("Formatted Prompt:", formatted_prompt)  # Debugging: Inspect prompt
+        except Exception as e:
+            return JsonResponse({"success": False, "error": f"Prompt formatting error: {str(e)}"})
 
+        try:
+            # Use LangChain to generate the response
+            llm = ChatGoogleGenerativeAI(
+            model="gemini-1.5-flash",  # Specify the model you’re using
+            google_api_key=os.getenv("GOOGLE_API_KEY"),  # Your API key from environment variables
+    temperature=0.7  # Controls randomness; adjust as needed
+)
+            response = llm.invoke(formatted_prompt)
+            full_response = response.content.strip()
+            # print("Full Response:", full_response)  # Debugging: Inspect raw response
+
+            # Parse the response to extract text and emotion levels
             if "```json" in full_response:
                 response_text, json_part = full_response.split("```json", 1)
                 emotion_json = json_part.split("```")[0].strip()
                 emotion_levels = json.loads(emotion_json)
             else:
+                # Fallback parsing if JSON markers are missing
                 try:
                     json_start = full_response.rfind("{")
                     json_end = full_response.rfind("}") + 1
@@ -224,24 +260,28 @@ def chat_with_character_api(request):
                     response_text = full_response
                     emotion_levels = {"Anger": 1, "Sadness": 1, "Pride": 1, "Joy": 1, "Bliss": 1}
 
+            # Ensure emotion levels are within the valid range (1-5)
             for emotion in emotion_levels:
-                emotion_levels[emotion] = max(1, min(5, emotion_levels[emotion]))
+                emotion_levels[emotion] = max(1, min(5, int(emotion_levels[emotion])))
         except Exception as e:
+            print("AI Invocation Error:", str(e))  # Debugging: Log specific error
             return JsonResponse({"success": False, "error": f"AI error: {str(e)}"})
 
-        conversation_history.append({'role': 'model', 'content': response_text.strip()})
+        # Update conversation history in session
+        conversation_history.append({'role': 'model', 'content': response_text})
         request.session[history_key] = conversation_history
 
+        # Save the conversation to the database
         Conversation.objects.create(
             character=character,
             user_id=user_id,
             message=user_message,
-            response=response_text.strip()
+            response=response_text
         )
 
         return JsonResponse({
             "success": True,
-            "response": response_text.strip(),
+            "response": response_text,
             "emotions": emotion_levels
         })
     return JsonResponse({"success": False, "error": "Invalid request method."})
