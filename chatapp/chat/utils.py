@@ -4,9 +4,12 @@ import re
 from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
+from dotenv import load_dotenv
+import os 
 
+load_dotenv()
 # Configure the API key (do this once, typically outside the function)
-genai.configure(api_key="AIzaSyAwuj2Rh3GjdjZAzrsWMdDrzcTZmFzGyuw")  # Your API key
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))  # Your API key
 
 
 # Initialize SentenceTransformer model for embeddings

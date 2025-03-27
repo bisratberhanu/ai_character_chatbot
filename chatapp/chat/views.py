@@ -10,7 +10,10 @@ from .models import Book, Character, Conversation
 from .utils import extract_characters, store_book_in_vector_db, get_relevant_context
 import google.generativeai as genai
 import json
-genai.configure(api_key="AIzaSyAwuj2Rh3GjdjZAzrsWMdDrzcTZmFzGyuw")  # Replace with your actual API key
+from dotenv import load_dotenv
+import os
+load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))  # Replace with your actual API key
 
 
 def auth_view(request):
