@@ -1,5 +1,7 @@
 # AI Character Chatbot
 
+![alt text](image.png)
+
 ## Overview
 
 The AI Character Chatbot is a project designed to simulate engaging and contextually relevant conversations with various characters. The project is organized into a modular structure to ensure maintainability and scalability. Each folder and file serves a specific purpose, such as handling AI logic, managing user interactions, or storing data. Below is a detailed breakdown of the file structure to help you navigate and understand the project.
